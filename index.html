@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DishDelight - Discover Culinary Magic</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header></header> <!-- Navbar injected here -->
+
+    <section class="hero">
+        <div class="container">
+            <h1>Welcome to DishDelight</h1>
+            <p>Your ultimate destination for culinary inspiration. Discover, share, and savor the world's best recipes.
+            </p>
+            <a href="/signup.html" id="get-started-btn" class="btn btn-primary"
+                style="font-size: 1.1rem; padding: 0.8rem 2rem; background-color: var(--accent-color); color: var(--secondary-color);">Start
+                Cooking</a>
+        </div>
+    </section>
+
+    <h2 class="section-title">About DishDelight</h2>
+    <section class="container">
+        <div class="about-section">
+            <h3 style="color: black;">
+                DishDelight is a vibrant community of food enthusiasts, home cooks, and professional chefs.
+                We believe that cooking is an art form that brings people together. Whether you're looking for
+                quick weeknight dinners, decadent desserts, or healthy meal prep ideas, DishDelight has something for
+                everyone.
+                Join us to explore a world of flavors and share your own culinary masterpieces.
+            </h3>
+        </div>
+        <br>
+        <h2 class="section-title">Why Choose Us?</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🍳</div>
+                <h3>Diverse Recipes</h3>
+                <p>Explore thousands of recipes from cuisines around the globe.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Community Driven</h3>
+                <p>Connect with other foodies, share tips, and get inspired.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⭐</div>
+                <h3>Rate & Review</h3>
+                <p>Share your feedback and see what others are saying about recipes.</p>
+            </div>
+        </div>
+
+
+
+        <h2 class="section-title">Featured Delights</h2>
+        <div class="recipe-grid" id="featured-recipes">
+            <p class="text-center" style="grid-column: 1 / -1;">Loading featured delights...</p>
+        </div>
+        <div class="text-center mt-1" style="margin-bottom: 5rem;">
+            <a href="/most-popular.html" class="btn btn-primary">View All Recipes</a>
+        </div>
+
+        <div class="newsletter">
+            <h2 style="color: white;">Join Our Culinary Community</h2>
+            <p>Get the latest recipes, tips, and trends delivered straight to your inbox.</p>
+            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                <input type="email" placeholder="Enter your email address" required>
+                <button type="submit"
+                    style="background-color: var(--accent-color); color: var(--secondary-color);">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 DishDelight. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        async function loadFeaturedRecipes() {
+            try {
+                const recipes = await apiFetch('/api/recipes');
+                const container = document.getElementById('featured-recipes');
+
+                if (!recipes || recipes.length === 0) {
+                    container.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">No recipes found.</p>';
+                    return;
+                }
+
+                // Sort by rating (descending) and take top 3
+                const topRecipes = recipes
+                    .sort((a, b) => parseFloat(b.averageRating) - parseFloat(a.averageRating))
+                    .slice(0, 3);
+
+                container.innerHTML = topRecipes.map(recipe => {
+                    const rating = parseFloat(recipe.averageRating).toFixed(1);
+                    const stars = '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+
+                    return `
+                    <div class="card">
+                        <img src="${recipe.image || 'https://via.placeholder.com/300'}" alt="${recipe.title}">
+                        <div class="card-content">
+                            <h3 class="card-title">${recipe.title}</h3>
+                            <div class="rating">
+                                ${stars} <span style="color: #666; font-size: 0.9rem;">(${rating})</span>
+                            </div>
+                            <p class="card-text" style="font-size: 0.9rem; color: #666;">Created by: ${recipe.userName || 'Unknown'}</p>
+                            <p class="card-text">${recipe.description ? recipe.description.substring(0, 100) + '...' : ''}</p>
+                            <a href="/recipe-detail.html?id=${recipe.id}" class="btn btn-outline">View Recipe</a>
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (error) {
+                console.error('Error loading featured recipes:', error);
+                document.getElementById('featured-recipes').innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">Failed to load featured recipes.</p>';
+            }
+        }
+
+        loadFeaturedRecipes();
+    </script>
+</body>
+
+</html>

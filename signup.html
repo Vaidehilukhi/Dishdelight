@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Share - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header></header>
+
+    <div class="form-container">
+        <h2 class="text-center mb-1">Create Account</h2>
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g. 9876543210" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confpassword">Confirm Password</label>
+                <input type="password" id="confpassword" name="confpassword" required>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary" style="width: 100%">Sign Up</button>
+        </form>
+        <p class="text-center mt-1">Already have an account? <a href="/signin.html"
+                style="color: var(--primary-color)">Sign In</a></p>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            if (data.password !== data.confpassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            const result = await apiFetch('/sign', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            if (result && result.message) {
+                alert(result.message);
+                if (result.message.includes('Successfully')) {
+                    window.location.href = '/signin.html';
+                }
+            } else if (result && result.exist) {
+                alert('User already exists');
+            }
+        });
+    </script>
+
+</body>
+
+</html>

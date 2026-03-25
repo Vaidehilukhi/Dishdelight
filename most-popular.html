@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Share - Most Popular</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .rating {
+            color: #f1c40f;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header></header>
+
+    <div class="container">
+        <h1 class="text-center mb-1">Most Popular Recipes</h1>
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterRecipes('all', this)">All</button>
+            <button class="filter-btn" onclick="filterRecipes('top-rated', this)">Top Rated</button>
+            <button class="filter-btn" onclick="filterRecipes('most-reviewed', this)">Most Reviewed</button>
+        </div>
+
+        <div class="recipe-grid" id="popular-recipes">
+            <p class="text-center">Loading...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let allRecipes = [];
+
+        async function loadPopularRecipes() {
+            try {
+                const recipes = await apiFetch('/api/recipes');
+                console.log('Fetched recipes:', recipes); // Debugging
+                if (recipes) {
+                    allRecipes = recipes;
+                    filterRecipes('all');
+                } else {
+                    document.getElementById('popular-recipes').innerHTML = '<p class="text-center">Failed to load recipes.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading recipes:', error);
+                document.getElementById('popular-recipes').innerHTML = '<p class="text-center">Error loading recipes.</p>';
+            }
+        }
+
+        function filterRecipes(filter, btn) {
+            // Update active button if btn is provided
+            if (btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+
+            let filtered = [...allRecipes];
+
+            if (filter === 'top-rated') {
+                filtered.sort((a, b) => parseFloat(b.averageRating) - parseFloat(a.averageRating));
+            } else if (filter === 'most-reviewed') {
+                filtered.sort((a, b) => b.reviewCount - a.reviewCount);
+            } else {
+                // Default sort (e.g., by ID or random)
+                filtered.sort((a, b) => b.id - a.id);
+            }
+
+            displayRecipes(filtered);
+        }
+
+        function displayRecipes(recipes) {
+            const container = document.getElementById('popular-recipes');
+
+            if (recipes.length === 0) {
+                container.innerHTML = '<p class="text-center">No recipes found.</p>';
+                return;
+            }
+
+            container.innerHTML = recipes.map(recipe => {
+                const rating = parseFloat(recipe.averageRating).toFixed(1);
+                const stars = '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+
+                return `
+                <div class="card">
+                    <img src="${recipe.image || 'https://via.placeholder.com/300'}" alt="${recipe.title}">
+                    <div class="card-content">
+                        <h3 class="card-title">${recipe.title}</h3>
+                        <div class="rating">
+                            ${stars} <span style="color: #666; font-size: 0.9rem;">(${rating})</span>
+                        </div>
+                        <p class="card-text" style="font-size: 0.9rem; color: #666;">Created by: ${recipe.userName || 'Unknown'}</p>
+                        <p class="card-text">${recipe.description ? recipe.description.substring(0, 100) + '...' : ''}</p>
+                        <a href="/recipe-detail.html?id=${recipe.id}" class="btn btn-outline">View Recipe</a>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        loadPopularRecipes();
+    </script>
+    <footer>
+        <p>&copy; 2025 DishDelight. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DishDelight - Recipe Details</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .review-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .review-card {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #ddd;
+        }
+
+        .star-rating input:checked~label,
+        .star-rating label:hover,
+        .star-rating label:hover~label {
+            color: #f1c40f;
+        }
+    </style>
+</head>
+
+<body>
+    <header></header>
+
+    <div class="container">
+        <div id="recipe-detail" class="recipe-detail-container">
+            <p class="text-center">Loading recipe details...</p>
+        </div>
+
+        <div class="review-section">
+            <h3>Reviews</h3>
+            <div id="review-form-container" class="mb-1">
+                <!-- Review form will be injected here if logged in -->
+            </div>
+            <div id="reviews-list">
+                <!-- Reviews will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipeId = urlParams.get('id');
+
+        async function loadRecipeDetail() {
+            if (!recipeId) {
+                document.getElementById('recipe-detail').innerHTML = '<p class="text-center">Invalid recipe ID.</p>';
+                return;
+            }
+
+            const recipe = await apiFetch(`/api/recipes/${recipeId}`);
+
+            if (!recipe || recipe.message === 'Recipe not found') {
+                document.getElementById('recipe-detail').innerHTML = '<p class="text-center">Recipe not found.</p>';
+                return;
+            }
+
+            const container = document.getElementById('recipe-detail');
+            const user = JSON.parse(localStorage.getItem('user'));
+            let editButton = '';
+            if (user && (user.id === recipe.userId || user.role === 'admin')) {
+                editButton = `<a href="/add-recipe.html?id=${recipe.id}" class="btn btn-primary" style="margin-right: 1rem;">Edit Recipe</a>`;
+            }
+
+            container.innerHTML = `
+                <div class="recipe-header text-center">
+                    <h1 class="mb-1">${recipe.title}</h1>
+                    <p class="text-muted">Created by: ${recipe.userName || 'Unknown'}</p>
+                </div>
+                
+                <div class="recipe-image-container mb-1">
+                    <img src="${recipe.image || 'https://via.placeholder.com/800x400'}" alt="${recipe.title}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 10px;">
+                </div>
+
+                <div class="recipe-content">
+                    <div class="mb-1">
+                        <h3>Description</h3>
+                        <p>${recipe.description}</p>
+                    </div>
+
+                    <div class="mb-1">
+                        <h3>Ingredients</h3>
+                        <p style="white-space: pre-line;">${recipe.ingredients}</p>
+                    </div>
+
+                    <div class="mb-1">
+                        <h3>Instructions</h3>
+                        <p style="white-space: pre-line;">${recipe.instructions}</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-1">
+                    ${editButton}
+                    <a href="/recipe-list.html" class="btn btn-outline">Back to Recipes</a>
+                </div>
+            `;
+
+            loadReviews();
+            setupReviewForm();
+        }
+
+        async function loadReviews() {
+            const reviews = await apiFetch(`/api/recipes/${recipeId}/reviews`);
+            const container = document.getElementById('reviews-list');
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = '<p>No reviews yet. Be the first to review!</p>';
+                return;
+            }
+
+            container.innerHTML = reviews.map(review => `
+                <div class="review-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>${review.userName}</strong>
+                        <span style="color: #f1c40f;">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
+                    </div>
+                    <p>${review.comment}</p>
+                    <small style="color: #999;">${new Date(review.createdAt).toLocaleDateString()}</small>
+                </div>
+            `).join('');
+        }
+
+        function setupReviewForm() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const container = document.getElementById('review-form-container');
+
+            if (!user) {
+                container.innerHTML = '<p><a href="/signin.html" style="color: var(--primary-color);">Sign in</a> to leave a review.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <form id="review-form" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h4>Leave a Review</h4>
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
+                            <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                            <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                            <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                            <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">Comment</label>
+                        <textarea id="comment" name="comment" rows="3" ></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            `;
+
+            document.getElementById('review-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const rating = formData.get('rating');
+                const comment = formData.get('comment');
+
+                const result = await apiFetch(`/api/recipes/${recipeId}/reviews`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        userId: user.id,
+                        userName: user.name,
+                        rating: parseInt(rating),
+                        comment
+                    })
+                });
+
+                if (result) {
+                    alert('Review submitted successfully!');
+                    loadReviews();
+                    e.target.reset();
+                }
+            });
+        }
+
+        loadRecipeDetail();
+    </script>
+    <footer>
+        <p>&copy; 2025 DishDelight. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

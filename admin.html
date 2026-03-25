@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Recipe Sharing</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand" style="color:purple; font-size: 24px;">
+            <a>DishDelight</a>
+        </div>
+        <div class="nav-links">
+
+            <button id="logout-btn" class="btn-secondary"
+                style="background-color: #d60909; color: white; border-radius: 5px; padding: 10px 20px;">Logout</button>
+        </div>
+    </nav>
+
+    <main class="container admin-container">
+        <h1>Admin Dashboard</h1>
+
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="users">Users</button>
+            <button class="tab-btn" data-tab="recipes">Recipes</button>
+            <button class="tab-btn" data-tab="reviews">Reviews</button>
+            <button class="tab-btn" data-tab="contact">Contact Messages</button>
+        </div>
+
+        <div id="users-tab" class="tab-content active">
+            <h2>Manage Users</h2>
+            <div class="table-responsive">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Users will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="recipes-tab" class="tab-content">
+            <h2>Manage Recipes</h2>
+
+            <br>
+            <div id="recipes-list" class="recipe-grid">
+                <!-- Recipes will be populated here -->
+            </div>
+        </div>
+
+        <div id="reviews-tab" class="tab-content">
+            <h2>Manage Reviews</h2>
+            <div class="table-responsive">
+                <table id="reviews-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Recipe</th>
+                            <th>User</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Reviews will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="contact-tab" class="tab-content">
+            <h2>Contact Messages</h2>
+            <div class="table-responsive">
+                <table id="messages-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Messages will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

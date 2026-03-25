@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DishDelight - My Recipes</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header></header>
+
+    <div class="container">
+        <h1 class="text-center mb-1">My Recipes</h1>
+        <div class="recipe-grid" id="recipe-list">
+            <!-- Recipes will be dynamically loaded here -->
+            <p class="text-center">Loading recipes...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        async function loadRecipes() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            let url = '/api/recipes';
+
+            // If user is logged in, filter by their ID
+            if (user) {
+                url += `?userId=${user.id}`;
+            } else {
+                // If not logged in, maybe redirect or show empty? 
+                // For now, let's show all or redirect. 
+                // Given the requirement "after login... show particular user recipe", 
+                // if not logged in, they probably shouldn't be here or it should show nothing.
+                // But let's stick to the filter logic.
+            }
+
+            console.log('Fetching recipes from:', url); // Debugging
+
+            const recipes = await apiFetch(url);
+            const container = document.getElementById('recipe-list');
+
+            if (!recipes || recipes.length === 0) {
+                container.innerHTML = '<p class="text-center">No recipes found.</p>';
+                return;
+            }
+
+            container.innerHTML = recipes.map(recipe => {
+                const isOwner = user && (user.id === recipe.userId || user.role === 'admin');
+                const buttons = isOwner ? `
+                    <div style="margin-top: 10px;">
+                        <button onclick="deleteRecipe(${recipe.id})" class="btn btn-outline" style="color: red; border-color: red;">Delete</button>
+                    </div>
+                ` : '';
+
+                return `
+                <div class="card">
+                    <img src="${recipe.image || 'https://via.placeholder.com/300'}" alt="${recipe.title}">
+                    <div class="card-content">
+                        <h3 class="card-title">${recipe.title}</h3>
+                        <p class="card-text" style="font-size: 0.9rem; color: #666;">Created by: ${recipe.userName || 'Unknown'}</p>
+                        <p class="card-text">${recipe.description ? recipe.description.substring(0, 100) + '...' : ''}</p>
+                        <a href="/recipe-detail.html?id=${recipe.id}" class="btn btn-outline">View Recipe</a>
+                        ${buttons}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        async function deleteRecipe(id) {
+            if (!confirm('Are you sure you want to delete this recipe?')) return;
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            const result = await apiFetch(`/api/recipes/${id}`, {
+                method: 'DELETE',
+                body: JSON.stringify({ userId: user.id, role: user.role })
+            });
+
+            if (result) {
+                alert('Recipe deleted successfully');
+                loadRecipes();
+            }
+        }
+
+        loadRecipes();
+    </script>
+
+</body>
+
+</html>

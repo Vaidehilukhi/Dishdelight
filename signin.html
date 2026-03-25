@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Share - Sign In</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header></header>
+
+    <div class="form-container">
+        <h2 class="text-center mb-1">Welcome Back</h2>
+        <form id="signin-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary" style="width: 100%">Sign In</button>
+        </form>
+
+        <p class="text-center mt-1">Don't have an account? <a href="/signup.html"
+                style="color: var(--primary-color)">Sign Up</a></p>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('signin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const result = await apiFetch('/login', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            if (result) {
+                if (result.login) {
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    alert('Login Successful');
+                    if (result.user.role === 'admin') {
+                        window.location.href = '/admin.html';
+                    } else {
+                        window.location.href = '/index.html';
+                    }
+                } else if (result.user === false) {
+                    alert('User not found');
+                } else if (result.password === false) {
+                    alert('Incorrect password');
+                }
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>
